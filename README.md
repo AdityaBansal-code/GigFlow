@@ -106,7 +106,7 @@ Before you begin, ensure you have the following installed:
 ### 1. Clone the Repository
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/AdityaBansal-code/Gig.git
 cd GigFlow
 ```
 
@@ -146,7 +146,7 @@ cd ../frontend
 npm install
 
 # Create environment file
-echo "VITE_API_URL=http://localhost:8000" > .env
+cp .env.example .env
 ```
 
 **Frontend Environment Variables** (`.env`):
@@ -422,7 +422,7 @@ This project is licensed under the ISC License.
 
 ## 👨‍💻 Author
 
-GigFlow Development Team
+Aditya Bansal
 
 ## 🙏 Acknowledgments
 

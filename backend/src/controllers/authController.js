@@ -23,11 +23,10 @@ export const register = asyncHandler(async (req, res) => {
   res.cookie('token', token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
-    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', // Production: none (cross-site), Dev: lax
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
     maxAge: 7 * 24 * 60 * 60 * 1000,
   });
 
-  // Return token in response body for localStorage fallback
   successResponse(res, 201, { user, token }, 'User registered successfully');
 });
 
@@ -57,6 +56,5 @@ export const login = asyncHandler(async (req, res) => {
 
   user.password = undefined;
 
-  // Return token in response body for localStorage fallback
   successResponse(res, 200, { user, token }, 'Login successful');
 });

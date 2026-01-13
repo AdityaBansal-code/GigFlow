@@ -34,15 +34,12 @@ const useGigStore = create((set) => ({
       const gigData = response.data;
 
       set((state) => {
-        // Update list if gig exists, or add it
         const gigExists = state.gigs.some(g => g._id === gigData._id);
         let updatedGigs = state.gigs;
 
         if (gigExists) {
           updatedGigs = state.gigs.map(g => g._id === gigData._id ? gigData : g);
         } else {
-          // careful not to mess up order too much, usually prepend or append
-          // but since details view mostly cares about 'finding' it, appending is fine.
           updatedGigs = [...state.gigs, gigData];
         }
 
