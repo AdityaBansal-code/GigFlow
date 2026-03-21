@@ -10,6 +10,9 @@ import Gigs from './pages/Gigs';
 import CreateGig from './pages/CreateGig';
 import GigDetails from './pages/GigDetails';
 import ViewBids from './pages/ViewBids';
+import Dashboard from './pages/Dashboard';
+import UserProfile from './pages/UserProfile';
+import EditProfile from './pages/EditProfile';
 
 function App() {
   return (
@@ -52,6 +55,23 @@ function App() {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="dashboard"
+            element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="profile/edit"
+            element={
+              <ProtectedRoute>
+                <EditProfile />
+              </ProtectedRoute>
+            }
+          />
+          <Route path="profile/:userId" element={<UserProfile />} />
         </Route>
       </Routes>
     </BrowserRouter>

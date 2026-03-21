@@ -26,8 +26,14 @@ export default function Header() {
             
             {isAuthenticated ? (
               <>
+                <Link to="/dashboard" className="text-sm sm:text-base text-black hover:text-gray-600 px-2 py-1 border-b border-transparent hover:border-black">
+                  Dashboard
+                </Link>
                 <Link to="/gigs/new" className="text-sm sm:text-base text-black hover:text-gray-600 px-2 py-1 border-b border-transparent hover:border-black">
                   Post a Gig
+                </Link>
+                <Link to={`/profile/${user?._id}`} className="text-sm sm:text-base text-black hover:text-gray-600 px-2 py-1 border-b border-transparent hover:border-black">
+                  Profile
                 </Link>
                 <span className="text-sm sm:text-base text-black px-2 py-1 hidden sm:inline">
                   Hello, {user?.name}

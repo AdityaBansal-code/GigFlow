@@ -31,3 +31,12 @@ export const hireFreelancer = async (bidId) => {
     throw new Error(getErrorMessage(error));
   }
 };
+
+export const withdrawBid = async (bidId) => {
+  try {
+    const response = await apiClient.patch(`/api/bids/${bidId}/withdraw`);
+    return response.data;
+  } catch (error) {
+    throw new Error(getErrorMessage(error));
+  }
+};

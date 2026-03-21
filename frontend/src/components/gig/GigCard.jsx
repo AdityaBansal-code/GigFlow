@@ -28,6 +28,20 @@ export default function GigCard({ gig, searchQuery = '' }) {
       </div>
       
       <p className="text-black mb-4 line-clamp-2">{gig.description}</p>
+
+      <div className="flex flex-wrap gap-2 mb-4">
+        {gig.category && (
+          <span className="text-xs border border-black px-2 py-1">{gig.category}</span>
+        )}
+        {gig.difficulty && (
+          <span className="text-xs border border-black px-2 py-1">{gig.difficulty}</span>
+        )}
+        {gig.deadline && (
+          <span className="text-xs border border-black px-2 py-1">
+            Due: {new Date(gig.deadline).toLocaleDateString()}
+          </span>
+        )}
+      </div>
       
       <div className="flex justify-between items-center mb-4">
         <div>
@@ -37,6 +51,9 @@ export default function GigCard({ gig, searchQuery = '' }) {
         <div className="text-right">
           <p className="text-sm text-black">Posted by</p>
           <p className="text-sm font-medium text-black">{gig.ownerId?.name || 'Unknown'}</p>
+          {!!gig.ownerId?.avgRating && (
+            <p className="text-xs text-black">⭐ {gig.ownerId.avgRating.toFixed(1)}</p>
+          )}
         </div>
       </div>
       

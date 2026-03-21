@@ -45,3 +45,16 @@ export const validateGigIdParam = [
     }),
   validate,
 ];
+
+export const validateBidIdParam = [
+  param('bidId')
+    .notEmpty()
+    .withMessage('Bid ID is required')
+    .custom((value) => {
+      if (!mongoose.Types.ObjectId.isValid(value)) {
+        throw new Error('Invalid Bid ID format');
+      }
+      return true;
+    }),
+  validate,
+];

@@ -22,6 +22,37 @@ const userSchema = new mongoose.Schema(
       minlength: [6, 'Password must be at least 6 characters'],
       select: false,
     },
+    // Profile fields (optional, for freelancer/client profiles)
+    bio: {
+      type: String,
+      default: '',
+      maxlength: [500, 'Bio cannot exceed 500 characters'],
+      trim: true,
+    },
+    skills: {
+      type: [String],
+      default: [],
+      trim: true,
+    },
+    profilePhoto: {
+      type: String, // URL to image
+      default: null,
+    },
+    portfolio: {
+      type: String, // URL to portfolio website
+      default: null,
+    },
+    avgRating: {
+      type: Number,
+      default: 0,
+      min: 0,
+      max: 5,
+    },
+    totalReviews: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
   },
   {
     timestamps: true,

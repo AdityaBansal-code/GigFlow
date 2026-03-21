@@ -5,17 +5,28 @@ import useAuthStore from '../store/authStore';
 import GigList from '../components/gig/GigList';
 import Button from '../components/common/Button';
 import SearchBar from '../components/common/SearchBar';
+import GigFilters from '../components/gig/GigFilters';
 import { useDebounce } from '../hooks/useDebounce';
 
 export default function Gigs() {
   const [searchQuery, setSearchQuery] = useState('');
   const debouncedSearch = useDebounce(searchQuery, 500);
-  const { gigs, isLoading, error, fetchGigs } = useGigStore();
+  const { gigs, isLoading, error, fetchGigsFiltered } = useGigStore();
   const { isAuthenticated } = useAuthStore();
+  const [filters, setFilters] = useState({
+    category: '',
+    difficulty: '',
+    sortBy: '',
+  });
 
   useEffect(() => {
-    fetchGigs(debouncedSearch);
-  }, [debouncedSearch, fetchGigs]);
+    fetchGigsFiltered({
+      search: debouncedSearch,
+      category: filters.category,
+      difficulty: filters.difficulty,
+      sortBy: filters.sortBy,
+    });
+  }, [debouncedSearch, filters, fetchGigsFiltered]);
 
   const handleSearch = (e) => {
     setSearchQuery(e.target.value);
@@ -23,6 +34,10 @@ export default function Gigs() {
 
   const handleClearSearch = () => {
     setSearchQuery('');
+  };
+
+  const handleFilterChange = (next) => {
+    setFilters((prev) => ({ ...prev, ...next }));
   };
 
   return (
@@ -44,6 +59,7 @@ export default function Gigs() {
             </Link>
           )}
         </div>
+        <GigFilters filters={filters} onChange={handleFilterChange} />
       </div>
       
       <GigList gigs={gigs} isLoading={isLoading} error={error} searchQuery={searchQuery} />

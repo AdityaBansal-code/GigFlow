@@ -58,3 +58,32 @@ export const getBidsByGig = asyncHandler(async (req, res) => {
 
   successResponse(res, 200, bids);
 });
+
+export const withdrawBid = asyncHandler(async (req, res) => {
+  const { bidId } = req.params;
+  const userId = req.user._id;
+
+  const bid = await Bid.findById(bidId);
+
+  if (!bid) {
+    throw new NotFoundError('Bid not found');
+  }
+
+  // Authorization: Only bid creator can withdraw
+  if (bid.freelancerId.toString() !== userId.toString()) {
+    throw new ForbiddenError('You are not authorized to withdraw this bid');
+  }
+
+  // Can only withdraw if bid is still pending
+  if (bid.status !== 'pending') {
+    throw new BadRequestError('Cannot withdraw a bid that is not pending');
+  }
+
+  const withdrawnBid = await Bid.findByIdAndUpdate(
+    bidId,
+    { status: 'withdrawn' },
+    { new: true }
+  ).populate('freelancerId', 'name email');
+
+  successResponse(res, 200, withdrawnBid, 'Bid withdrawn successfully');
+});

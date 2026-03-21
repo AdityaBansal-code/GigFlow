@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { createBid, getBidsByGig, hireFreelancer } from '../services/bidService';
+import { createBid, getBidsByGig, hireFreelancer, withdrawBid } from '../services/bidService';
 
 const useBidStore = create((set) => ({
   bids: [],
@@ -71,6 +71,24 @@ const useBidStore = create((set) => ({
         isLoading: false,
         error: error.message,
       });
+      throw error;
+    }
+  },
+
+  withdrawBid: async (bidId) => {
+    set({ isLoading: true, error: null });
+    try {
+      const response = await withdrawBid(bidId);
+      set((state) => ({
+        bids: state.bids.map((bid) =>
+          bid._id === bidId ? { ...bid, status: 'withdrawn' } : bid
+        ),
+        isLoading: false,
+        error: null,
+      }));
+      return response;
+    } catch (error) {
+      set({ isLoading: false, error: error.message });
       throw error;
     }
   },
