@@ -22,27 +22,28 @@ export const hireFreelancer = asyncHandler(async (req, res) => {
     throw new ForbiddenError('You are not authorized to hire for this gig');
   }
 
-  const currentGig = await Gig.findById(bid.gigId._id);
-  if (!currentGig || currentGig.status !== 'open') {
+  // The gig update is the deciding write: it only matches while the gig is still open,
+  // so of several concurrent hire requests exactly one can claim it.
+  const claimedGig = await Gig.findOneAndUpdate(
+    { _id: bid.gigId._id, status: 'open' },
+    { status: 'assigned' },
+    { new: true }
+  );
+  if (!claimedGig) {
     throw new BadRequestError('Gig is no longer available or already assigned');
   }
 
-  const currentBid = await Bid.findById(bidId);
-  if (!currentBid || currentBid.status !== 'pending') {
-    throw new BadRequestError('Bid is no longer available or already processed');
-  }
-
-  const hiredBid = await Bid.findByIdAndUpdate(
-    bidId,
+  const hiredBid = await Bid.findOneAndUpdate(
+    { _id: bidId, gigId: bid.gigId._id, status: 'pending' },
     { status: 'hired' },
     { new: true }
   ).populate('freelancerId', 'name email').populate('gigId');
 
-  await Gig.findByIdAndUpdate(
-    bid.gigId._id,
-    { status: 'assigned' },
-    { new: true }
-  );
+  if (!hiredBid) {
+    // The bid changed (for example, it was withdrawn) after the gig was claimed: release the gig.
+    await Gig.updateOne({ _id: bid.gigId._id, status: 'assigned' }, { status: 'open' });
+    throw new BadRequestError('Bid is no longer available or already processed');
+  }
 
   await Bid.updateMany(
     {

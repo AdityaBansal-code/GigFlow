@@ -3,12 +3,15 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
 import { errorHandler } from './middleware/errorHandler.js';
-import { sanitizeInput } from './middleware/security.js';
+import { sanitizeInput, apiLimiter, authLimiter } from './middleware/security.js';
 import routes from './routes/index.js';
 
 dotenv.config();
 
 const app = express();
+
+// The API runs behind a hosting proxy; trust one hop so rate limiting sees the client IP.
+app.set('trust proxy', 1);
 
 app.use(
   cors({
@@ -24,6 +27,8 @@ app.use(cookieParser());
 
 app.use(sanitizeInput);
 
+app.use('/api', apiLimiter);
+app.use('/api/auth', authLimiter);
 app.use('/api', routes);
 
 app.get('/health', (req, res) => {

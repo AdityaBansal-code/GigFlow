@@ -149,16 +149,18 @@ All routes are under `/api`. "Auth" means the request must carry a valid JWT.
 `PATCH /api/bids/:bidId/hire` (in `controllers/hiringController.js`):
 
 1. Loads the bid and its gig.
-2. Checks that the caller owns the gig, the gig is still `open`, and the bid is still `pending`.
-3. Marks the bid `hired`, marks the gig `assigned`, and rejects the other pending bids on that gig.
+2. Checks that the caller owns the gig.
+3. Claims the gig with a conditional update that only matches while its status is `open`, so when several hire requests arrive at once only one can succeed; the others receive a `400`.
+4. Marks the chosen bid `hired` (only if it is still `pending`; if it is not, the gig is released again), then rejects the other pending bids on that gig.
 
-Step 3 is three separate database writes. See the first known limitation below.
+The steps are separate writes rather than one transaction, so an interruption between them (for example a server crash) could leave a gig `assigned` with no hired bid.
 
 ## Authentication and security
 
 - Passwords are hashed with bcryptjs (10 salt rounds).
 - On register and login the server sets a `token` cookie (HttpOnly, `Secure` in production, `SameSite=None` in production and `Lax` in development, 7-day lifetime). It also returns the token in the response body. The frontend stores it in browser local storage (via the persisted Zustand auth store) and sends it as an `Authorization: Bearer` header, so page scripts can read the token even though the cookie itself is HttpOnly.
 - Protected routes use an `authenticate` middleware; owner-only actions (hiring, viewing a gig's bids, editing a gig) check ownership in the controller.
+- Rate limiting (`express-rate-limit`): 100 requests per 15 minutes per IP on `/api`, and 5 failed attempts per 15 minutes per IP on `/api/auth` (successful logins are not counted). `trust proxy` is set to 1 for hosting behind a single proxy.
 - Request bodies are validated with express-validator. The global `sanitizeInput` middleware only trims strings; it does not escape or filter HTML.
 - CORS reflects the request origin with credentials enabled (`origin: true`).
 - Duplicate-key errors from MongoDB are translated into friendly API errors.
@@ -171,8 +173,7 @@ Manual checklist: registration and login, protected routes, creating and searchi
 
 ## Known limitations
 
-- **The hire flow is not atomic.** The status checks and the three writes are separate operations with no transaction and no conditional update on the gig. Two hire requests for different bids on the same gig that arrive close together could both pass the checks. This was identified by reading the code and has not been reproduced. A fix would be to make the gig update the deciding write (update it only where `status` is `open` and continue only if it matched) or to run the three writes in one transaction.
-- **Rate limiters are not active.** `middleware/security.js` defines `apiLimiter` and `authLimiter` with `express-rate-limit`, but they are not mounted in the app, so no rate limiting is applied yet.
+- **Hire flow:** the gig claim is atomic, but the follow-up writes are not wrapped in a transaction (see above).
 - **Token exposure:** the JWT is also kept in local storage and sent as a Bearer header (see above), so the HttpOnly cookie does not keep it away from page scripts, and cookie settings alone do not protect against CSRF.
 - **CORS** currently allows any origin with credentials; it should be restricted to the known frontend origin before real use.
 - **No automated tests** and no CI.
